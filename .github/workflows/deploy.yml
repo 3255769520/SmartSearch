@@ -1,10 +1,13 @@
 name: Deploy Website
+
 on:
   push:
-    branches: [main] # 监听 main 分支的推送
+    branches: ["main"]
 
 permissions:
-  contents: write # 赋予 Actions 写入仓库的权限
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
@@ -13,18 +16,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Install and Build
-        run: |
-          npm install
-          npm run build
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Vite 默认编译输出目录是 dist
+          path: './dist'
 
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: dist # 打包产物所在目录
+        id: deployment
+        uses: actions/deploy-pages@v4
